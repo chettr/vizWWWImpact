@@ -1,15 +1,19 @@
 body {
   margin: 0;
   font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+  font-size: 12px;
   background-color: #FFFFFF;
 }
 
 h1 {
+	font-size: 3.5em;
 	margin-left: 10px;
 	margin-bottom: 10px;
 }
 
 h2 {
+	font-size: 3em;
+	margin-top:15px;
 	margin-bottom: 5px;
 }
 
@@ -42,8 +46,11 @@ width: 100px;
 background-color: #f9c;
 }
 
+div#vizContent{
+	position: relative;
+}
+
 div#intro {
-	font-size: 14px;
 	margin-bottom: 20px;
 }
 
@@ -63,7 +70,11 @@ div#intro {
 
 .strong{
 	font-weight: bold;
-	font-size: 14px;
+}
+
+.label{
+	display: inline;
+	font-weight: bold;
 }
 
 .d3-tip {
@@ -75,11 +86,22 @@ div#intro {
     text-align: center;
   }
 
-#mapDiv {
-	float: left;
-	margin-top: 10px;
-	margin-bottom: 10px;
+div#countrySelectDiv{
 	display: inline-block;
+}
+
+div#countryHeaderInfo{
+	z-index: 10;
+	position: absolute;
+	display: inline-block;
+	padding-top: 10px;
+}
+
+#mapDiv {
+	z-index: 1;
+	position: absolute;
+	top: 0;
+	right: 0;
 }
 
 svg#mapMain {

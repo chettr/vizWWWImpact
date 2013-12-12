@@ -12,6 +12,7 @@
   -->
     <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="css/main.css">
+    <script src="js/lib/jquery-1.9.1.js"></script>
     <script src="js/lib/d3.v3.min.js"></script>
     <script src="js/lib/topojson.v1.min.js"></script>
     <script src="js/lib/underscore-min.js"></script>
@@ -23,14 +24,26 @@
     <div id="left"></div>
     <div id="content">
       <div id="intro">
-        <p>text text text</p>
+        <p>Seitan meggings cred cliche, YOLO hoodie gluten-free. Sustainable hashtag aliquip photo booth. Commodo pariatur ut, gastropub butcher ethical eiusmod deep v Schlitz keytar eu Etsy roof party. Trust fund YOLO sustainable, freegan leggings eiusmod hashtag tofu. Tempor officia id ut Banksy, Williamsburg sunt banjo. Meh occaecat Banksy, adipisicing pour-over roof party dolor disrupt chillwave Schlitz scenester ut sapiente. Drinking vinegar vero ea, distillery cray ut delectus.</p>
       </div>
-      <div id="mapDiv">
-        <svg id="mapMain"></svg>
+      <div id="vizContent">
+        <div id="countrySelectDiv">
+          <p class="label">Sort</p>
+          <select onchange="sortAndDisplayCountries(this.options[this.selectedIndex].value)">
+            <option value="alpha" selected>Alphabetically</option>
+            <option value="income">By Income Group</option>
+            <option value="region">By Region</option>
+          </select><br/>
+          <select id="countrySelect" size="30"></select>
+        </div>
+        <div id="countryHeaderInfo"><h2>United Arab Emirates</h2></div>
+        <div id="mapDiv">
+          <svg id="mapMain"></svg>
+        </div>
       </div>
     </div>
     <div class="footer">
-      <p>Created by Kristina Durivage for <a href="http://mndataopener.com/">MN Data Opener</a>. Special thanks to Ann Kinney for my requests of non PDF data!</p>
+      <p>hello</p>
     </div>
   </body>
 </html>
