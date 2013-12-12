@@ -34,9 +34,9 @@
             <option value="income">By Income Group</option>
             <option value="region">By Region</option>
           </select><br/>
-          <select id="countrySelect" size="30"></select>
+          <select id="countrySelect" size="30" onchange="selectLocationScope(this.options[this.selectedIndex].value)"></select>
         </div>
-        <div id="countryHeaderInfo"><h2>United Arab Emirates</h2></div>
+        <div id="countryHeaderInfo"><h2 id="countryNameDisp"></h2></div>
         <div id="mapDiv">
           <svg id="mapMain"></svg>
         </div>

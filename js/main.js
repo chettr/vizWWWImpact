@@ -3,7 +3,6 @@ function loadData(){
 
 	loadCountryDataPromise.done(function(){
 		sortAndDisplayCountries('alpha');
-//		fillCountrySelect();
 		loadMap();
 	});
 }
@@ -30,7 +29,7 @@ function sortAndDisplayCountries(searchOpt){
 	select.selectAll("optgroup").remove();
 	select.selectAll("option").remove();
 
-	if (searchOpt == 'alpha'){ //non nested sorts
+	if (searchOpt == 'alpha'){ //non nested sort
 		countryData.sort(function (a, b) {
 			if (a.CountryName > b.CountryName)
 				return 1;
@@ -77,9 +76,11 @@ function sortAndDisplayCountries(searchOpt){
 			.append("option")
 			.text(function(d){return d.CountryName;});
 		}
-
-		console.log(nest);
 	}
+}
+
+function selectLocationScope(locScope){
+	d3.select("h2#countryNameDisp").text(locScope);
 }
 
 function loadMap(){

@@ -90,11 +90,16 @@ div#countrySelectDiv{
 	display: inline-block;
 }
 
+select#countrySelect{
+	width: 200px;
+}
+
 div#countryHeaderInfo{
 	z-index: 10;
 	position: absolute;
 	display: inline-block;
 	padding-top: 10px;
+	padding-left: 10px;
 }
 
 #mapDiv {
