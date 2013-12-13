@@ -14,6 +14,7 @@ var projection = d3.geo.mercator()
     .precision(0.1);
 
 var countryData;
+var worldMapData; //TODO Is this too large?
 
 function loadCountryData(){
 	var def = $.Deferred();
@@ -40,6 +41,7 @@ function sortAndDisplayCountries(searchOpt){
 
 		select.selectAll("option").data(countryData).enter()
 		.append("option")
+		.attr("value", function(d){ return d.mapID;})
 		.text(function(d){return d.CountryName;});
 	}
 	else { //nested sorts
@@ -74,13 +76,24 @@ function sortAndDisplayCountries(searchOpt){
 
 			optGroup.selectAll("option").data(nest[i].values).enter()
 			.append("option")
+			.attr("value", function(d){ return d.mapID;})
 			.text(function(d){return d.CountryName;});
 		}
 	}
 }
 
-function selectLocationScope(locScope){
-	d3.select("h2#countryNameDisp").text(locScope);
+/*function selectLocationByID(id){
+	var countryName = _.find(countryData, function(d){ return d.mapID == id;}).CountryName;
+	selectLocationScope(countryName);
+}*/
+
+function selectLocationScope(id){
+	var thisCountryData = _.find(countryData, function(d){ return d.mapID == id;});
+
+	d3.selectAll("#mapMain > path").classed("selectedCountry", false);
+	d3.select("#m_" + id).classed("selectedCountry", true).moveToFront();
+
+	d3.select("h2#countryNameDisp").text(thisCountryData.CountryName);
 }
 
 function loadMap(){
@@ -93,11 +106,13 @@ function loadMap(){
 		.projection(projection);	
 
 	d3.json("data/map/world-50m.json", function(errorMap, world) {
+		worldMapData = world;
+
 		svg.selectAll("path")
 		.data(topojson.feature(world, world.objects.countries).features).enter().append("path")
 		.attr({
 			d: path,
-			id: function(d) {return d.properties.name;},
+			id: function(d) {return "m_" + d.id;},
 			stroke: '#000',
 			'stroke-opacity': 0.5,
 			'class': function(d){
@@ -107,13 +122,14 @@ function loadMap(){
 		})
 		.on('click', function(d){
 			if (this.className.baseVal == 'validCountry') {
-				reCenterMap(d.id);	
+				selectLocationScope(d.id);	
 			}
 		});
 	});
 }
 
-function reCenterMap(countryID){
-	console.log(countryID);
-
-}
+d3.selection.prototype.moveToFront = function() {
+  return this.each(function(){
+    this.parentNode.appendChild(this);
+  });
+};
