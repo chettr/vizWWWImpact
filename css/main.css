@@ -125,6 +125,6 @@ svg#mapMain {
 .selectedCountry {
 	fill: #6B66D4;
 	stroke: #5A55B5;
-	stroke-width: 15px;
-	stroke-linejoin: round;
+	/*stroke-width: 15px;
+	stroke-linejoin: round;*/
 }

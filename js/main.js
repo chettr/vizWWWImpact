@@ -7,11 +7,18 @@ function loadData(){
 	});
 }
 
+/*
+width : 800px;
+	height : 430px;*/
+
 var projection = d3.geo.mercator()
     .scale(100)
-    .translate([400,300])
-    //.translate([width / 2, height / 2])
+   // .translate([400,300])
+    .translate([400, 300])
     .precision(0.1);
+
+var path = d3.geo.path()
+		.projection(projection);	
 
 var countryData;
 var worldMapData; //TODO Is this too large?
@@ -99,33 +106,83 @@ function selectLocationScope(id){
 function loadMap(){
 	var svg = d3.selectAll("svg#mapMain");
 
-	var width = svg.attr("width");
-	var height = svg.attr("height");
+	var g = svg.append("g");
 
-	var path = d3.geo.path()
-		.projection(projection);	
+	var width = svg.attr("width", 800);
+	var height = svg.attr("height", 430);
 
 	d3.json("data/map/world-50m.json", function(errorMap, world) {
 		worldMapData = world;
+		var features = topojson.feature(world, world.objects.countries).features.filter(function(d){if (d.id != 10){return d;} });
 
-		svg.selectAll("path")
-		.data(topojson.feature(world, world.objects.countries).features).enter().append("path")
+		g.selectAll("path")
+		.data(features).enter().append("path")
 		.attr({
 			d: path,
 			id: function(d) {return "m_" + d.id;},
 			stroke: '#000',
 			'stroke-opacity': 0.5,
+			'stroke-width': 1,
 			'class': function(d){
 				var thisData = _.find(countryData, function(fd){ return d.id == fd.mapID;});
 				return thisData === undefined ? "invalidCountry" : "validCountry";
 			}
 		})
-		.on('click', function(d){
+		.on('click', mapClick/*function(d){
 			if (this.className.baseVal == 'validCountry') {
-				selectLocationScope(d.id);	
+				//selectLocationScope(d.id);	
+				mapClick
 			}
-		});
+		}*/);
 	});
+}
+
+var active;
+
+function mapClick(d) {
+  if (active === d) return resetMap();
+  var svg = d3.selectAll("svg#mapMain");
+  var g = svg.select("g");
+
+  var width = svg.attr("width");
+  var height = svg.attr("height");
+
+  g.selectAll(".selectedCountry").classed("selectedCountry", false);
+  d3.select(this).classed("selectedCountry", active = d);
+
+  var b = path.bounds(d);
+  var scaleModifier = 0.95 / Math.max((b[1][0] - b[0][0]) / width, ((b[1][1] - b[0][1]) / height));
+
+  console.log("Coord 1 (" + b[0][0] + "," + b[0][1] + ")" );
+  console.log("Coord 2 (" + b[1][0] + "," + b[1][1] + ")" );
+  console.log("offset x " + (-(b[1][0] + b[0][0]) / 2) );
+  console.log("offset y " + (-(b[1][1] + b[0][1]) / 2 ) );
+  console.log("scale " + scaleModifier);
+  //b[0][1] += 15
+  //b[1][1] += 15
+
+  g.transition().duration(500).attr("transform",
+		"translate(" + projection.translate() + ")" +
+		"scale(" + scaleModifier + ")" + 
+		"translate(" + 
+		-(b[1][0] + b[0][0]) / 2 + 
+		"," + 
+		((-(b[1][1] + b[0][1]) / 2 ) - ((165 / scaleModifier)/2))+ 
+		")");
+
+  g.selectAll("path").transition().duration(500).attr({
+		"stroke-width": 1/scaleModifier
+  });
+}
+
+function resetMap() {
+	var g = d3.select("svg#mapMain > g");
+	g.selectAll("path").transition().duration(500).attr({
+		"stroke-width": 1
+  });
+
+  g.selectAll(".selectedCountry").classed("selectedCountry", false);
+  g.transition().duration(500).attr("transform", "");
 }
 
 d3.selection.prototype.moveToFront = function() {
