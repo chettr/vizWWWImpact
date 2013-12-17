@@ -25,7 +25,7 @@ var worldMapData; //TODO Is this too large?
 
 function loadCountryData(){
 	var def = $.Deferred();
-	d3.csv("data/countryData.csv", function(errorCountryData, inCountryData){
+	d3.csv("data/countryByRankScore.csv", function(errorCountryData, inCountryData){
 		countryData = inCountryData;
 		def.resolve();
 	});
