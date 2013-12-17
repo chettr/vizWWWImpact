@@ -11,7 +11,7 @@ function loadData(){
 width : 800px;
 	height : 430px;*/
 
-var projection = d3.geo.mercator()
+var projection = d3.geo.mercator() 
     .scale(100)
    // .translate([400,300])
     .translate([400, 300])
@@ -111,7 +111,7 @@ function loadMap(){
 	var width = svg.attr("width", 800);
 	var height = svg.attr("height", 430);
 
-	d3.json("data/map/world-50m.json", function(errorMap, world) {
+	d3.json("data/map/output.json", function(errorMap, world) {
 		worldMapData = world;
 		var features = topojson.feature(world, world.objects.countries).features.filter(function(d){if (d.id != 10){return d;} });
 
@@ -140,6 +140,9 @@ function loadMap(){
 var active;
 
 function mapClick(d) {
+	console.log(d);
+	console.log(worldMapData);
+	console.log(_.find(worldMapData.objects.countries.geometries, function(dIn){ return dIn.id = d.id;}));
   if (active === d) return resetMap();
   var svg = d3.selectAll("svg#mapMain");
   var g = svg.select("g");
@@ -150,14 +153,26 @@ function mapClick(d) {
   g.selectAll(".selectedCountry").classed("selectedCountry", false);
   d3.select(this).classed("selectedCountry", active = d);
 
+//todo check if bounding box is entire length of viewport, if so then magicrotate
+
+  if (d.id == "643"){
+  	projection.rotate([180, 0, 0]);
+
+	g.selectAll("path").attr({d: path});
+  }
+
   var b = path.bounds(d);
   var scaleModifier = 0.95 / Math.max((b[1][0] - b[0][0]) / width, ((b[1][1] - b[0][1]) / height));
+  var centerX = -(b[1][0] + b[0][0]) / 2;
 
-  console.log("Coord 1 (" + b[0][0] + "," + b[0][1] + ")" );
-  console.log("Coord 2 (" + b[1][0] + "," + b[1][1] + ")" );
-  console.log("offset x " + (-(b[1][0] + b[0][0]) / 2) );
-  console.log("offset y " + (-(b[1][1] + b[0][1]) / 2 ) );
-  console.log("scale " + scaleModifier);
+
+
+
+  //console.log("Coord 1 (" + b[0][0] + "," + b[0][1] + ")" );
+  //console.log("Coord 2 (" + b[1][0] + "," + b[1][1] + ")" );
+  //console.log("offset x " + (-(b[1][0] + b[0][0]) / 2) );
+  //console.log("offset y " + (-(b[1][1] + b[0][1]) / 2 ) );
+  //console.log("scale " + scaleModifier);
   //b[0][1] += 15
   //b[1][1] += 15
 
@@ -165,7 +180,7 @@ function mapClick(d) {
 		"translate(" + projection.translate() + ")" +
 		"scale(" + scaleModifier + ")" + 
 		"translate(" + 
-		-(b[1][0] + b[0][0]) / 2 + 
+		centerX + 
 		"," + 
 		((-(b[1][1] + b[0][1]) / 2 ) - ((165 / scaleModifier)/2))+ 
 		")");
