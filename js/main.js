@@ -89,18 +89,16 @@ function sortAndDisplayCountries(searchOpt){
 	}
 }
 
-/*function selectLocationByID(id){
-	var countryName = _.find(countryData, function(d){ return d.mapID == id;}).CountryName;
-	selectLocationScope(countryName);
-}*/
-
 function selectLocationScope(id){
+	console.log(id);
 	var thisCountryData = _.find(countryData, function(d){ return d.mapID == id;});
 
-	d3.selectAll("#mapMain > path").classed("selectedCountry", false);
+	d3.selectAll("#mapMain > g > path").classed("selectedCountry", false);
 	d3.select("#m_" + id).classed("selectedCountry", true).moveToFront();
 
 	d3.select("h2#countryNameDisp").text(thisCountryData.CountryName);
+	var features = topojson.feature(worldMapData, worldMapData.objects.countries).features.filter(function(d){return d.id == id; });
+	mapClick(d3.select("#m_" + id).attr("d"));
 }
 
 function loadMap(){
@@ -128,73 +126,96 @@ function loadMap(){
 				return thisData === undefined ? "invalidCountry" : "validCountry";
 			}
 		})
-		.on('click', mapClick/*function(d){
-			if (this.className.baseVal == 'validCountry') {
-				//selectLocationScope(d.id);	
-				mapClick
-			}
-		}*/);
+		.on('click', mapClick);
 	});
 }
 
 var active;
 
 function mapClick(d) {
-	console.log(d);
-	console.log(worldMapData);
-	console.log(_.find(worldMapData.objects.countries.geometries, function(dIn){ return dIn.id = d.id;}));
-  if (active === d) return resetMap();
-  var svg = d3.selectAll("svg#mapMain");
-  var g = svg.select("g");
+	var mouseClick;
+	var selection;
 
-  var width = svg.attr("width");
-  var height = svg.attr("height");
+	if(this.window === undefined){//click on map
+		mouseClick = d3.mouse(this);
+		selection = this;
+	}
+	else { //click on select 
+		mouseClick = [0,0];
+		selection = d3.select("#m_" + id);
+	}
 
-  g.selectAll(".selectedCountry").classed("selectedCountry", false);
-  d3.select(this).classed("selectedCountry", active = d);
+	if (active === d) return resetMap();
+	var svg = d3.selectAll("svg#mapMain");
+	var g = svg.select("g");
 
-//todo check if bounding box is entire length of viewport, if so then magicrotate
+	var width = svg.attr("width");
+	var height = svg.attr("height");
 
-  if (d.id == "643"){
-  	projection.rotate([180, 0, 0]);
+	g.selectAll(".selectedCountry").classed("selectedCountry", false);
+	d3.select(selection).classed("selectedCountry", active = d);
 
-	g.selectAll("path").attr({d: path});
-  }
+	var b = path.bounds(d);
+	var loadCountryDataPromise = $.Deferred();
 
-  var b = path.bounds(d);
-  var scaleModifier = 0.95 / Math.max((b[1][0] - b[0][0]) / width, ((b[1][1] - b[0][1]) / height));
-  var centerX = -(b[1][0] + b[0][0]) / 2;
+	if ((b[1][0] - b[0][0]) > 600){ //If bounding box is close to entire length of viewport, rotate the projection and redraw
+		console.log(b[1][0] - b[0][0]);
+		d3.transition()
+        .duration(500)
+        .tween("rotate", function() {
+			var endNumber = mouseClick[0] < 400 ? 180 : -180;
+			var r = d3.interpolateNumber(0, endNumber);
+			return function(t) {
+				projection.rotate([r(t), 0, 0]);
+				g.selectAll("path").attr({d: path});
+			};
+		}).each("end", function(){
+			b = path.bounds(d); 
+			loadCountryDataPromise.resolve();
+		});
+	}
+	else {
+		loadCountryDataPromise.resolve();
+	}
 
+	loadCountryDataPromise.done(function(){
+		var scaleModifier = 0.95 / Math.max((b[1][0] - b[0][0]) / width, ((b[1][1] - b[0][1]) / height));
 
+		g.transition().duration(500).attr("transform",
+			"translate(" + projection.translate() + ")" +
+			"scale(" + scaleModifier + ")" + 
+			"translate(" + 
+			-(b[1][0] + b[0][0]) / 2 + 
+			"," + 
+			((-(b[1][1] + b[0][1]) / 2 ) - ((165 / scaleModifier)/2))+ 
+			")");
 
-
-  //console.log("Coord 1 (" + b[0][0] + "," + b[0][1] + ")" );
-  //console.log("Coord 2 (" + b[1][0] + "," + b[1][1] + ")" );
-  //console.log("offset x " + (-(b[1][0] + b[0][0]) / 2) );
-  //console.log("offset y " + (-(b[1][1] + b[0][1]) / 2 ) );
-  //console.log("scale " + scaleModifier);
-  //b[0][1] += 15
-  //b[1][1] += 15
-
-  g.transition().duration(500).attr("transform",
-		"translate(" + projection.translate() + ")" +
-		"scale(" + scaleModifier + ")" + 
-		"translate(" + 
-		centerX + 
-		"," + 
-		((-(b[1][1] + b[0][1]) / 2 ) - ((165 / scaleModifier)/2))+ 
-		")");
-
-  g.selectAll("path").transition().duration(500).attr({
-		"stroke-width": 1/scaleModifier
-  });
+		g.selectAll("path").transition().duration(500).attr({
+			"stroke-width": 1/scaleModifier
+		});
+	});
+	
 }
 
 function resetMap() {
+	active = undefined;
 	var g = d3.select("svg#mapMain > g");
+
+	if (Math.abs(projection.rotate()[0]) == 180){
+		d3.transition()
+        .duration(500)
+        .tween("rotate", function() {
+			var r = d3.interpolateNumber(projection.rotate()[0], 0);
+			return function(t) {
+				projection.rotate([r(t), 0, 0]);
+				g.selectAll("path").attr({d: path});
+			};
+		});
+	}
+	
 	g.selectAll("path").transition().duration(500).attr({
 		"stroke-width": 1
-  });
+	});
 
   g.selectAll(".selectedCountry").classed("selectedCountry", false);
   g.transition().duration(500).attr("transform", "");
