@@ -98,7 +98,7 @@ function selectLocationScope(id){
 
 	d3.select("h2#countryNameDisp").text(thisCountryData.CountryName);
 	var features = topojson.feature(worldMapData, worldMapData.objects.countries).features.filter(function(d){return d.id == id; });
-	mapClick(d3.select("#m_" + id).attr("d"));
+	mapClick(d3.select("#m_" + id).data()[0]);
 }
 
 function loadMap(){
@@ -142,7 +142,7 @@ function mapClick(d) {
 	}
 	else { //click on select 
 		mouseClick = [0,0];
-		selection = d3.select("#m_" + id);
+		selection = d3.select("#m_" + d.id)[0][0];
 	}
 
 	if (active === d) return resetMap();
@@ -159,7 +159,6 @@ function mapClick(d) {
 	var loadCountryDataPromise = $.Deferred();
 
 	if ((b[1][0] - b[0][0]) > 600){ //If bounding box is close to entire length of viewport, rotate the projection and redraw
-		console.log(b[1][0] - b[0][0]);
 		d3.transition()
         .duration(500)
         .tween("rotate", function() {
