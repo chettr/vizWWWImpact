@@ -90,7 +90,10 @@ function sortAndDisplayCountries(searchOpt){
 }
 
 function selectLocationScope(id){
-	console.log(id);
+	if (active && active.id == id){
+		$('#countrySelect option').prop("selected", false);
+	}
+
 	var thisCountryData = _.find(countryData, function(d){ return d.mapID == id;});
 
 	d3.selectAll("#mapMain > g > path").classed("selectedCountry", false);
